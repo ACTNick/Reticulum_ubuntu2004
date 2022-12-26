@@ -2,7 +2,8 @@ use Mix.Config
 
 # NOTE: this file contains some security keys/certs that are *not* secrets, and are only used for local development purposes.
 
-host = "hubs.local"
+host = "localhost"
+dev_janus_host = "localhost"
 cors_proxy_host = "hubs-proxy.local"
 assets_host = "hubs-assets.local"
 link_host = "hubs-link.local"
@@ -17,14 +18,18 @@ link_host = "hubs-link.local"
 # watchers to your application. For example, we use it
 # with brunch.io to recompile .js and .css sources.
 config :ret, RetWeb.Endpoint,
-  url: [scheme: "https", host: host, port: 4000],
-  static_url: [scheme: "https", host: host, port: 4000],
+  url: [
+	scheme: "https", host: host, port: 4000
+	],
+  static_url: [
+	scheme: "https", host: host, port: 4000
+	],
   https: [
     port: 4000,
     otp_app: :ret,
     cipher_suite: :strong,
-    keyfile: "#{File.cwd!()}/priv/dev-ssl.key",
-    certfile: "#{File.cwd!()}/priv/dev-ssl.cert"
+    keyfile: "#{File.cwd!()}/priv/cert/key.pem",
+    certfile: "#{File.cwd!()}/priv/cert/cert.pem"
   ],
   cors_proxy_url: [scheme: "https", host: cors_proxy_host, port: 4000],
   assets_url: [scheme: "https", host: assets_host, port: 4000],
@@ -156,16 +161,16 @@ config :ret, Ret.Storage,
 asset_hosts =
   "https://localhost:4000 https://localhost:8080 " <>
     "https://#{host}:4000 https://#{host}:8080 https://#{host}:3000 https://#{host}:8989 https://#{
-      host
+     host 
     }:9090 https://#{cors_proxy_host}:4000 " <>
     "https://assets-prod.reticulum.io https://asset-bundles-dev.reticulum.io https://asset-bundles-prod.reticulum.io"
 
 websocket_hosts =
   "https://localhost:4000 https://localhost:8080 wss://localhost:4000 " <>
     "https://#{host}:4000 https://#{host}:8080 wss://#{host}:4000 wss://#{host}:8080 wss://#{host}:8989 wss://#{
-      host
+     host
     }:9090 " <>
-    "wss://#{host}:4000 wss://#{host}:8080 https://#{host}:8080 https://hubs.local:8080 wss://hubs.local:8080"
+    "wss://#{host}:4000 wss://#{host}:8080 https://#{host}:8080 https://localhost:8080 wss://localhost:8080"
 
 config :ret, RetWeb.Plugs.AddCSP,
   script_src: asset_hosts,
@@ -182,7 +187,7 @@ config :ret, Ret.Mailer, adapter: Bamboo.LocalAdapter
 config :ret, RetWeb.Email, from: "info@hubs-mail.com"
 
 config :ret, Ret.PermsToken,
-  perms_key: (System.get_env("PERMS_KEY") || "") |> String.replace("\\n", "\n")
+  perms_key: "-----BEGIN RSA PRIVATE KEY-----\nMIICXQIBAAKBgQDb/wBZvGnDAHuINDTSHB7+3A3CQ8aoM//bPx91Vg4NHRta7BcK\nsfAUAPr4ZZpQ3wo6Qs5D7VL5zFXHBZJvZSxUOStf7W6jw7q8YKkrKyJBjIOQapNZ\n1T4HBUKdqSddqdqKdRLBCakkdOV4gG49KZJkaUBd8fWMyuJS8UGpxVBvEwIDAQAB\nAoGBAM/dUpR3XSr+MrqQMXRxU6wVef6bEYJul4quSugQJninjuhK+L6HQEN2Zav8\nPGG7TKud4cz22ZbjRg0lq6YLX2R3XI1dUvW1xEQJa6n4uMmMbzP/Jc5I/1ZwAw/n\nmyNZ4JRqU83Jtizch6rHyDypfHSwf/YWvySHaSlOLZznDHzpAkEA//O+5kNjLz4B\np2KGm3BIgoVgW8FTuePHqpZGhqauI8Vo2Xx+bkYeZVL9RXA2hPlGad7pRH3pWNyL\ncXgknO9J1QJBANwJiMCwNxbQEzNI4tQasKx1W4CdOYDtKmrV8mx4lCbAyffLZFsu\n8Gc0wR/71DDUHGsjoYnlYPc4+l1TOpl0oUcCQFCb02NxlasrPBobTYlms29n0hET\nseq5cgini06c7/sUERFtw+O28Zu3p0xXKtR2LVbqfUy02ujBjKkPzXgfZIECQQDN\nuyxd3WTks5AAN3m+D2Z5GRGA44BMh3NNiNStjuAWi9NLGKSwjObB2JVpri/rp6ca\nlaoIIKvU+zU75QG5UU8pAkAVM0IziPhQQGSy7K5bKzRyVyXPNn0we6ODr0ueR77o\nSXnionFBzFYqWz2E8J/3zf9DCOjIsdD/mbhf8awYg4xb\n-----END RSA PRIVATE KEY-----"
 
 config :ret, Ret.OAuthToken, oauth_token_key: ""
 
@@ -212,7 +217,7 @@ config :ret, Ret.Habitat, ip: "127.0.0.1", http_port: 9631
 dialog_hostname = System.get_env("DIALOG_HOSTNAME") || "dev-janus.reticulum.io"
 dialog_port = String.to_integer(System.get_env("DIALOG_PORT") || "443")
 
-config :ret, Ret.JanusLoadStatus, default_janus_host: dialog_hostname, janus_port: dialog_port
+config :ret, Ret.JanusLoadStatus, default_janus_host: dev_janus_host, janus_port: 4443
 
 config :ret, Ret.RoomAssigner, balancer_weights: [{600, 1}, {300, 50}, {0, 500}]
 
